@@ -44,6 +44,7 @@ WINDOW_ANIMATION_SPEED = 3
 FPS = 25
 SLEEP_MILLIS = 1.0/FPS
 USE_COLORS = False
+SCREENSAVER_MODE = True
 
 if PYTHON2:
     # ASCII ONLY FOR PYTHON 2
@@ -194,6 +195,7 @@ def randint(_min, _max):
 def main():
     steps = 0
     scr = curses.initscr()
+    scr.nodelay(1)
     curses.curs_set(0)
     curses.noecho()
     
@@ -233,6 +235,10 @@ def main():
 
         scr.refresh()
         time.sleep(SLEEP_MILLIS)
+        if SCREENSAVER_MODE:
+            key_pressed = scr.getch() != -1
+            if key_pressed:
+                raise KeyboardInterrupt()
         steps += 1
 
 try:
