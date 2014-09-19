@@ -24,12 +24,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 
+from __future__ import unicode_literals
+import locale
 import time
 import curses
 import random
 from collections import namedtuple
 import sys
 PYTHON2 = sys.version_info.major < 3
+locale.setlocale(locale.LC_ALL, '')
+encoding = locale.getpreferredencoding()
 
 ########################################################################
 # TUNABLES
@@ -45,13 +49,7 @@ FPS = 25
 SLEEP_MILLIS = 1.0/FPS
 USE_COLORS = False
 SCREENSAVER_MODE = True
-
-if PYTHON2:
-    # ASCII ONLY FOR PYTHON 2
-    MATRIX_CODE_CHARS = "'`´\$%&/()=?#+~><:;{}^°"
-else:
-    # FUNKY UTF CHARACTERS FOR PYTHON 3!
-    MATRIX_CODE_CHARS = "ɀɁɂŧϢϣϤϥϦϧϨϫϬϭϮϯϰϱϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰ߃߄༣༤༥༦༧༩༪༫༬༭༮༯༰༱༲༳༶"
+MATRIX_CODE_CHARS = "ɀɁɂŧϢϣϤϥϦϧϨϫϬϭϮϯϰϱϢϣϤϥϦϧϨϩϪϫϬϭϮϯϰ߃߄༣༤༥༦༧༩༪༫༬༭༮༯༰༱༲༳༶"
 
 ########################################################################
 # CODE
@@ -73,7 +71,7 @@ class FallingChar(object):
         self.reset(width, MIN_SPEED, MAX_SPEED)
     
     def reset(self, width, MIN_SPEED, MAX_SPEED):
-        self.char = random.choice(FallingChar.matrixchr)
+        self.char = random.choice(FallingChar.matrixchr).encode(encoding)
         self.x = randint(1, width - 1)
         self.y = 0
         self.speed = randint(MIN_SPEED, MAX_SPEED)
@@ -87,18 +85,18 @@ class FallingChar(object):
             self.out_of_bounds_reset(width, height)
             # make previous char curses.A_NORMAL
             if USE_COLORS:
-                scr.addch(self.y, self.x, self.char, curses.color_pair(COLOR_CHAR_NORMAL))
+                scr.addstr(self.y, self.x, self.char, curses.color_pair(COLOR_CHAR_NORMAL))
             else:
-                scr.addch(self.y, self.x, self.char, curses.A_NORMAL)
+                scr.addstr(self.y, self.x, self.char, curses.A_NORMAL)
                 
             # choose new char and draw it A_REVERSE if not out of bounds
-            self.char = random.choice(FallingChar.matrixchr)
+            self.char = random.choice(FallingChar.matrixchr).encode(encoding)
             self.y += 1
             if not self.out_of_bounds_reset(width, height):
                 if USE_COLORS:
-                    scr.addch(self.y, self.x, self.char, curses.color_pair(COLOR_CHAR_HIGHLIGHT))
+                    scr.addstr(self.y, self.x, self.char, curses.color_pair(COLOR_CHAR_HIGHLIGHT))
                 else:
-                    scr.addch(self.y, self.x, self.char, curses.A_REVERSE)
+                    scr.addstr(self.y, self.x, self.char, curses.A_REVERSE)
     
     def out_of_bounds_reset(self, width, height):
         if self.x > width-2:
@@ -163,7 +161,7 @@ class WindowAnimation(object):
                 if clear_char is None:
                     scr.chgat(y, x, 1, attrs)
                 else:
-                    scr.addch(y, x, clear_char, attrs)
+                    scr.addstr(y, x, clear_char, attrs)
         for x in (x1, x2):
             for y in range(y1, y2+1):
                 if x < 0 or x > w-1 or y < 0 or y > h-2:
@@ -171,7 +169,7 @@ class WindowAnimation(object):
                 if clear_char is None:
                     scr.chgat(y, x, 1, attrs)
                 else:
-                    scr.addch(y, x, clear_char, attrs)
+                    scr.addstr(y, x, clear_char, attrs)
 
 
 # we don't need a good PRNG, just something that looks a bit random.
@@ -222,7 +220,7 @@ def main():
         for i in range(RANDOM_CLEANUP):
             x = randint(0, width-1)
             y = randint(0, height-1)
-            scr.addch(y, x, ' ')
+            scr.addstr(y, x, ' ')
         if randint(0, WINDOW_CHANCE) == 1:
             if window_animation is None:
                 #start window animation
